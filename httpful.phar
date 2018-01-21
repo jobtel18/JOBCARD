@@ -1,0 +1,49 @@
+<?php
+// Placer le fichier httpful.phar dans le meme repertoire ou
+include('httpful.phar');
+//include('./httpful.phar');
+$flux = '{"messages":[
+ {
+ "signature":"VOTRE_SIGNATURE",
+ "subject":"testAPI1",
+ "content":"Mon message pour un destinataire",
+ "recipients":[
+ {
+ "id":1, "value":"22177XXXXXXX"
+ }
+]
+},
+{
+ "signature":"VOTRE_SIGNATURE",
+ "subject":"testAPI2",
+ "content":"Mon message pour deux destinataires",
+ "recipients":[
+ {
+ "id":2,"value":"22176XXXXXXX"
+ },
+ {
+ "id":3,"value":"22170XXXXXXX"
+ }
+ ]
+ }
+]
+}';
+$api_access_key='VOTRE_CLE_SECRETE';
+$token='VOTRE_TOKEN';
+$timestamp = time();
+$msgToEncrypt=$token . $flux . $timestamp;
+$key=hash_hmac('sha1', $msgToEncrypt, $api_access_key);
+$uri = "https://api.orangesmspro.sn:8443/api/json?token=". $token ."&key=". $key
+."&timestamp=". $timestamp;
+/** Si vous preferez utiliser MD5
+ $key=md5($msgToEncrypt.$private_key);
+ $uri = "https://api.orangesmspro.sn:8443/api/xml?token=". $token ."&key=". $key
+."&timestamp=". $timestamp."&algo=md5";
+*/
+$response = \Httpful\Request::post($uri)
+ ->body($flux)
+ ->authenticateWith('VOTRE_LOGIN', $token)
+ ->sendsJson()
+ ->send();
+echo $response;
+?>
